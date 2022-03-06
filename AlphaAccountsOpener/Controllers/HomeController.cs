@@ -63,6 +63,7 @@ namespace AlphaAccountsOpener.Controllers
                 item.AmountDecimal = decimal.Parse(item.Amount.Trim().Replace(",", "."));
                 item.isDebit = item.Debit == "Χ";
                 item.Reason = item.Reason.Replace("=\"", "").Replace("\"", "");
+                item.TransactionNumber = item.TransactionNumber.Replace("=\"", "").Replace("\"", "");
             }
             if (orderByAmount)
             {

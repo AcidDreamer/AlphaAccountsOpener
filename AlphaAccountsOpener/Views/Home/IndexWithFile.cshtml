@@ -1,22 +1,25 @@
 ﻿@model AlphaAccountsOpener.Controllers.ViewModel
-@{ 
-    decimal totalSpend = 0;
-    decimal totalSpendWithCredits = 0;
-    foreach(var trans in Model.Transactions)
+@{
+    decimal totalSpent = 0;
+    decimal totalSpentWithCredits = 0;
+    List<string> possibleCategories = Model.Transactions.GroupBy(o => o.Reason).OrderByDescending(o => o.Count()).Select(o => o.Key + " (" + o.Count() + ")").ToList();
+    foreach (var trans in Model.Transactions)
     {
+
         var isDebit = trans.Debit == "Χ";
         if (!isDebit)
         {
-            totalSpendWithCredits -= trans.AmountDecimal;
+            totalSpentWithCredits -= trans.AmountDecimal;
         }
         else
         {
-            totalSpend += trans.AmountDecimal;
-            totalSpendWithCredits += trans.AmountDecimal;
+            totalSpent += trans.AmountDecimal;
+            totalSpentWithCredits += trans.AmountDecimal;
         }
     }
+
 }
-<div class="text-center">
+<div class="text-center" style="margin-top:100px">
     @using (Html.BeginForm("IndexWithFile", "Home", FormMethod.Post, new
     { enctype = "multipart/form-data" }))
     {
@@ -30,53 +33,66 @@
         <button type="submit">Present</button>
     }
 </div>
+<div class="text-center" style="margin-top:40px">
+    <label for="reasons">Reasons:</label>
+    <select id="reasons" name="reasons">
+        @foreach (var reason in possibleCategories)
+        {
+        <option value="@reason">@reason</option>
+        }
+    </select>
 
-@if(Model != null)
+</div>
+@if (Model != null)
 {
-<div class="text-center" style="margin-top:40px;">
-    @if (Model.ContainsInvalids)
-    {
-        <h6 class="text-center" style="color:red;">
-            CSV Contains Invalid elements
-        </h6>
-    }
+    <div class="text-center" style="margin:40px;">
+        @if (Model.ContainsInvalids)
+        {
+            <h6 class="text-center" style="color:red;">
+                CSV Contains Invalid elements
+            </h6>
+        }
 
-    <div>
-        <h6>Total Spend @totalSpend</h6>
-        <h6>Total spend with credits @totalSpendWithCredits</h6>
-    </div>
+        <div>
+            <h6>Total Spent @totalSpent</h6>
+            <h6>Total spent with credits @totalSpentWithCredits</h6>
+            <h6 id="selectedSpentH">Total selected spent 0.00</h6>
+        </div>
 
 
-    <table>
-        <thead>
-            <tr>
-                <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.Date)</th>
-                <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.Amount)</th>
-                <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.CreditDate)</th>
-                <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.Reason)</th>
-                <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.TransactionNumber)</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var trans in Model.Transactions)
-            {
+        <table>
+            <thead>
                 <tr>
-                    <td>@trans.Date</td>
-                    <td class="@(trans.isDebit ? "redText" : "")">@(trans.isDebit ? "-" : "+" ) @trans.Amount</td>
-                    <td>@trans.Date</td>
-                    <td>@trans.Reason</td>
-                    <td>@trans.TransactionNumber</td>
+                    <th></th>
+                    <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.Date)</th>
+                    <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.Amount)</th>
+                    <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.CreditDate)</th>
+                    <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.Reason)</th>
+                    <th>@nameof(AlphaAccountsOpener.Controllers.TransactionDetails.TransactionNumber)</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var trans in Model.Transactions)
+                {
+                    <tr>
+                        <td><input type="checkbox" id="check-@trans.ID" style="transform: scale(1.5);" onclick="addToSelected(@trans.AmountDecimal ,@trans.isDebit.ToString().ToLower(), @trans.ID)"></td>
+                        <td>@trans.Date</td>
+                        <td class="@(trans.isDebit ? "redText" : "")">@(trans.isDebit ? "-" : "+" ) @trans.Amount</td>
+                        <td>@trans.Date</td>
+                        <td>@trans.Reason</td>
+                        <td>@trans.TransactionNumber</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
-</div>    
+    </div>
 }
 <style>
-    .redText{
-        color:red;
+    .redText {
+        color: red;
     }
+
     table {
         border-collapse: collapse;
         width: 100%;
@@ -88,3 +104,28 @@
         border-bottom: 1px solid #ddd;
     }
 </style>
+
+<script type="text/javascript">
+    selectedSpent = 0;
+
+    function addToSelected(amount, isPositive, id) {
+
+        var checkBox = document.getElementById("check-" + id);
+
+        if (checkBox.checked == true) {
+            if (isPositive == true) {
+                selectedSpent = selectedSpent + amount;
+            } else {
+                selectedSpent = selectedSpent - amount;
+            }
+        } else {
+            if (isPositive == true) {
+                selectedSpent = selectedSpent - amount;
+            } else {
+                selectedSpent = selectedSpent + amount;
+            }
+        }
+        var text = document.getElementById("selectedSpentH");
+        text.innerHTML = 'Total selected spent ' + Number(selectedSpent).toFixed(2);
+    }
+</script>
