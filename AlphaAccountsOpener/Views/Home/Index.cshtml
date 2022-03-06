@@ -1,0 +1,27 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center" style="margin-top:160px">
+    @using (Html.BeginForm("IndexWithFile", "Home", FormMethod.Post, new
+    { enctype = "multipart/form-data" }))
+    {
+        <input type="file"
+               id="file" name="file"
+               accept="*">
+        <input type="checkbox" id="orderByAmount" name="orderByAmount">
+        <label for="orderByAmount">Order by amount</label><br>
+
+        <button type="submit" style="margin-bottom:40px">Present</button>
+    }
+</div>
+<div class="text-center" style="margin-bottom:40px">
+
+    <h3>How to use</h3>
+</div>
+<div class="text-center">
+
+    <img src="~/images/1.jpg" width="1400" style="margin-bottom:40px" />
+    <img src="~/images/2.jpg" width="1400" style="margin-bottom:40px" />
+    <img src="~/images/3.jpg" width="1400" />
+</div>
