@@ -6,3 +6,4 @@ In case I forget how it works, just start it and see the index page for details 
 
 NO GOOD PRACTISES where followed, everything is in two files. (HomeController and the view)
 
+For maximum laziness project is hosted here https://alpha-accounts-viewer.azurewebsites.net/ on free tier
