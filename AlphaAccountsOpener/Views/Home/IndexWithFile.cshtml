@@ -23,24 +23,29 @@
     @using (Html.BeginForm("IndexWithFile", "Home", FormMethod.Post, new
     { enctype = "multipart/form-data" }))
     {
-        <input type="file"
-               id="file" name="file"
-               accept="*">
+    <input type="file"
+           id="file" name="file"
+           accept="*">
 
-        <input type="checkbox" id="orderByAmount" name="orderByAmount">
-        <label for="orderByAmount">Order by amount</label><br>
+    <input type="checkbox" id="orderByAmount" name="orderByAmount">
+    <label for="orderByAmount">Order by amount</label>
 
-        <button type="submit">Present</button>
+
+    <input type="checkbox" id="groupByReason" name="groupByReason">
+    <label for="groupByReason">Group by reason</label><br>
+
+    <button type="submit">Present</button>
     }
 </div>
 <div class="text-center" style="margin-top:40px">
-    <label for="reasons">Reasons:</label>
+    <label for="reasons">Possible reasons:</label>
     <select id="reasons" name="reasons">
         @foreach (var reason in possibleCategories)
         {
         <option value="@reason">@reason</option>
         }
-    </select>
+    </select><br />
+    <button onclick="invertAllSelections()">Invert all selections</button>
 
 </div>
 @if (Model != null)
@@ -75,7 +80,7 @@
                 @foreach (var trans in Model.Transactions)
                 {
                     <tr>
-                        <td><input type="checkbox" id="check-@trans.ID" style="transform: scale(1.5);" onclick="addToSelected(@trans.AmountDecimal ,@trans.isDebit.ToString().ToLower(), @trans.ID)"></td>
+                        <td><input type="checkbox" class="acc-checkbox" id="check-@trans.ID" style="transform: scale(1.5);" onclick="addToSelected(@trans.AmountDecimal ,@trans.isDebit.ToString().ToLower(), @trans.ID)"></td>
                         <td>@trans.Date</td>
                         <td class="@(trans.isDebit ? "redText" : "")">@(trans.isDebit ? "-" : "+" ) @trans.Amount</td>
                         <td>@trans.Date</td>
@@ -107,6 +112,12 @@
 
 <script type="text/javascript">
     selectedSpent = 0;
+    function invertAllSelections() {
+        var checkboxes = document.getElementsByClassName("acc-checkbox");
+        for (var checkbox of checkboxes) {
+            checkbox.click();
+        }
+    }
 
     function addToSelected(amount, isPositive, id) {
 

@@ -29,8 +29,13 @@ namespace AlphaAccountsOpener.Controllers
             var requestFile = Request.Form.Files.FirstOrDefault();
             var formFilter = Request.Form["orderByAmount"];
             bool orderByAmount = false;
+            var formFilter2 = Request.Form["groupByReason"];
+            bool groupByReason = false;
             if (formFilter.Count > 0)
                 orderByAmount = formFilter[0] == "on";
+            if (formFilter2.Count > 0)
+                groupByReason = formFilter2[0] == "on";
+
             if (requestFile is null)
                 return RedirectToAction("Index");
 
@@ -56,7 +61,6 @@ namespace AlphaAccountsOpener.Controllers
             CsvUserDetailsMapping csvMapper = new CsvUserDetailsMapping();
             CsvParser<TransactionDetails> csvParser = new CsvParser<TransactionDetails>(csvParserOptions, csvMapper);
             List<TinyCsvParser.Mapping.CsvMappingResult<TransactionDetails>> result = csvParser.ReadFromStream(validStream, Encoding.UTF8).ToList();
-            //List<TinyCsvParser.Mapping.CsvMappingResult<TransactionDetails>> result = csvParser.ReadFromStream(fileStream, Encoding.UTF8).ToList();
             var items = result.Select(r => r?.Result).Where(r => r != null).ToList();
             foreach (var item in items)
             {
@@ -64,6 +68,23 @@ namespace AlphaAccountsOpener.Controllers
                 item.isDebit = item.Debit == "Χ";
                 item.Reason = item.Reason.Replace("=\"", "").Replace("\"", "");
                 item.TransactionNumber = item.TransactionNumber.Replace("=\"", "").Replace("\"", "");
+            }
+            if (groupByReason)
+            {
+                var counter = 0;
+                items = items.GroupBy(i => new { i.Reason, i.isDebit }).Select(i => new TransactionDetails
+                {
+                    ID = (counter++).ToString(),
+                    Date = null,
+                    CreditDate = null,
+                    Store = null,
+                    TransactionNumber = null,
+                    isDebit = i.Key.isDebit,
+                    Reason = i.Key.Reason,
+                    AmountDecimal = i.Sum(i => i.AmountDecimal),
+                    Amount = i.Sum(i => i.AmountDecimal).ToString(),
+                    Debit = i.Key.isDebit ? "Χ" : "P"
+                }).ToList();
             }
             if (orderByAmount)
             {
